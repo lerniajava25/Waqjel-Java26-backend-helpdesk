@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Helpdesk Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="card">
+        <h2 style="text-align: center; margin-bottom: 20px;">Helpdesk Portal</h2>
+
+        <div th:if="${param.error}" class="alert-error">Invalid username, password, or inactive account.</div>
+        <div th:if="${param.logout}" class="alert-success">You have been logged out.</div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required autofocus />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required />
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%;">Log In</button>
+        </form>
+
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b;">
+            <strong>Demo Accounts:</strong><br/>
+            Admin: <code>admin</code> / <code>admin123</code><br/>
+            Agent: <code>agent</code> / <code>agent123</code><br/>
+            User: <code>user</code> / <code>user123</code>
+        </div>
+    </div>
+</div>
+</body>
+</html>

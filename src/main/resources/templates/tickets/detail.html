@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title>Ticket Details</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="max-width: 800px;">
+  <p style="margin-bottom: 14px;"><a th:href="@{/tickets}" class="link">← Back to Tickets</a></p>
+
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+      <h1 style="margin-bottom: 0;" th:text="${ticket.title}">Ticket Title</h1>
+      <span class="badge" th:classappend="'badge-' + ${ticket.status}" th:text="${ticket.status}">NEW</span>
+    </div>
+
+    <div class="meta-grid">
+      <div>
+        <div class="meta-label">Created By</div>
+        <div th:text="${ticket.createdBy.fullName}">User</div>
+      </div>
+      <div>
+        <div class="meta-label">Assigned To</div>
+        <div th:text="${ticket.assignedTo != null ? ticket.assignedTo.fullName : 'Unassigned'}">Unassigned</div>
+      </div>
+      <div>
+        <div class="meta-label">Created At</div>
+        <div th:text="${#temporals.format(ticket.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-01</div>
+      </div>
+    </div>
+
+    <p style="white-space: pre-line;" th:text="${ticket.description}">Ticket description</p>
+  </div>
+
+  <!-- AGENT & ADMIN CONTROLS -->
+  <div sec:authorize="hasAnyRole('AGENT', 'ADMIN')" class="card" style="background: #f8fafc;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="margin-bottom: 0;">Agent Controls</h3>
+      <form th:action="@{/tickets/{id}/assign(id=${ticket.id})}" method="post">
+        <button type="submit" class="btn btn-secondary btn-sm">Assign to Me</button>
+      </form>
+    </div>
+
+    <form th:action="@{/tickets/{id}/update(id=${ticket.id})}" method="post">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+        <div>
+          <label>Status</label>
+          <select name="status">
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == ticket.status}"></option>
+          </select>
+        </div>
+
+        <div>
+          <label>Assign To</label>
+          <select name="userId">
+            <option value="">-- Unassigned --</option>
+            <option th:each="agent : ${agents}"
+                    th:value="${agent.id}"
+                    th:text="${agent.fullName + ' (' + agent.role + ')'}"
+                    th:selected="${ticket.assignedTo != null and ticket.assignedTo.id == agent.id}">
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Update</button>
+    </form>
+  </div>
+
+  <!-- COMMENTS SECTION -->
+  <div class="card">
+    <h3>Comments</h3>
+
+    <div th:if="${#lists.isEmpty(ticket.comments)}" style="color: #64748b; margin-bottom: 16px;">
+      No comments yet.
+    </div>
+
+    <div th:each="comment : ${ticket.comments}" class="comment-box">
+      <div class="comment-header">
+        <strong style="color: #0f172a;" th:text="${comment.author.fullName}">Author</strong>
+        • <span th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">Time</span>
+      </div>
+      <p style="white-space: pre-line;" th:text="${comment.content}"></p>
+    </div>
+
+    <form th:action="@{/tickets/{id}/comments(id=${ticket.id})}" th:object="${newComment}" method="post" style="margin-top: 16px;">
+      <div class="form-group">
+        <textarea th:field="*{content}" rows="3" placeholder="Write a reply or update..." required></textarea>
+      </div>
+      <button type="submit" class="btn">Add Comment</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>
