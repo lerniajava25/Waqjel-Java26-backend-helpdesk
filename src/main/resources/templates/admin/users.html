@@ -13,6 +13,10 @@
         <a th:href="@{/admin/users/new}" class="btn">+ Create User</a>
     </div>
 
+    <div th:if="${param.error != null and param.error[0] == 'self'}" class="alert-error">
+        You cannot change your own role or deactivate your own account.
+    </div>
+
     <div class="table-wrap">
         <table>
             <thead>
@@ -28,25 +32,32 @@
             <tbody>
             <tr th:each="u : ${users}">
                 <td th:text="'#' + ${u.id}">#1</td>
-                <td><strong th:text="${u.username}">username</strong></td>
+                <td>
+                    <strong th:text="${u.username}">username</strong>
+                    <span th:if="${u.username == #authentication.name}" style="color: #64748b; font-size: 0.8rem;"> (You)</span>
+                </td>
                 <td th:text="${u.fullName}">Full Name</td>
                 <td>
-                    <form th:action="@{/admin/users/{id}/role(id=${u.id})}" method="post" class="inline-form">
+                    <form th:if="${u.username != #authentication.name}"
+                          th:action="@{/admin/users/{id}/role(id=${u.id})}" method="post" class="inline-form">
                         <select name="role">
                             <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" th:selected="${r == u.role}"></option>
                         </select>
                         <button type="submit" class="btn btn-sm">Save</button>
                     </form>
+                    <span th:if="${u.username == #authentication.name}" th:text="${u.role}" style="font-weight: 600;">ADMIN</span>
                 </td>
                 <td>
                     <span class="badge" th:classappend="${u.active ? 'badge-active' : 'badge-inactive'}"
                           th:text="${u.active ? 'Active' : 'Deactivated'}">Active</span>
                 </td>
                 <td>
-                    <form th:action="@{/admin/users/{id}/toggle-active(id=${u.id})}" method="post">
+                    <form th:if="${u.username != #authentication.name}"
+                          th:action="@{/admin/users/{id}/toggle-active(id=${u.id})}" method="post">
                         <button type="submit" class="btn btn-secondary btn-sm"
                                 th:text="${u.active ? 'Deactivate' : 'Activate'}"></button>
                     </form>
+                    <span th:if="${u.username == #authentication.name}" style="color: #64748b; font-size: 0.85rem;">Current User</span>
                 </td>
             </tr>
             </tbody>

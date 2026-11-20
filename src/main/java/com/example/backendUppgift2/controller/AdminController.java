@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @Controller
 @RequestMapping("/admin/users")
 public class AdminController {
@@ -42,16 +44,22 @@ public class AdminController {
     }
 
     @PostMapping("/{id}/role")
-    public String changeRole(@PathVariable Long id, @RequestParam Role role) {
+    public String changeRole(@PathVariable Long id, @RequestParam Role role, Principal principal) {
         User user = userRepo.findById(id).orElseThrow();
+        if (user.getUsername().equals(principal.getName())) {
+            return "redirect:/admin/users?error=self";
+        }
         user.setRole(role);
         userRepo.save(user);
         return "redirect:/admin/users";
     }
 
     @PostMapping("/{id}/toggle-active")
-    public String toggleActive(@PathVariable Long id) {
+    public String toggleActive(@PathVariable Long id, Principal principal) {
         User user = userRepo.findById(id).orElseThrow();
+        if (user.getUsername().equals(principal.getName())) {
+            return "redirect:/admin/users?error=self";
+        }
         user.setActive(!user.isActive());
         userRepo.save(user);
         return "redirect:/admin/users";
